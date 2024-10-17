@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paleositional Expression Evaluator</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: "Nirmala UI", "Sakkal Majalla";
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            background-color: #ffffff;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        input[type="text"], textarea, button {
+            margin: 10px 0;
+            padding: 5px;
+            width: 100%; /* Ensure it uses full width */
+            box-sizing: border-box; /* Include padding in width calculation */
+        }
+        button {
+            cursor: pointer;
+            background-color: #b647b2;
+            width: 100px;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+        }
+        button:hover {
+            background-color: #953a91;
+        }
+        #result {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #dc44d1;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #abd2d8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Paleositional Expression Evaluator</h1>
+
+    <h2>Evaluate Expression</h2>
+    <label for="expression"></label><input type="text" id="expression" placeholder="Enter expression (e.g., a&b-c|d)">
+    <button onclick="evaluateExpression()">Evaluate</button>
+
+    <h2>Compare Expressions</h2>
+    <label for="expression1"></label><input type="text" id="expression1" placeholder="Enter first expression">
+    <label for="expression2"></label><input type="text" id="expression2" placeholder="Enter second expression">
+    <button onclick="compareExpressions()">Compare</button>
+
+    <h2>Where Condition</h2>
+    <input type="text" id="whereExpression" placeholder="Enter expression">
+    <label for="conditions"></label><textarea id="conditions" placeholder='Enter conditions as JSON (e.g., {"a": 1, "b": 0})' rows="4"></textarea>
+    <button onclick="whereCondition()">Evaluate</button>
+
+    <div id="result"></div>
+    <script src="/static/script.js"></script>
+</body>
+</html>
