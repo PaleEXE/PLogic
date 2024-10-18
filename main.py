@@ -1,3 +1,6 @@
+import logging
+from urllib.request import Request
+
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -8,6 +11,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from PLogic import PExp
 
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 app = FastAPI()
 
 app.add_middleware(
@@ -26,6 +32,15 @@ class ExpressionInput(BaseModel):
 class WhereInput(BaseModel):
     expression: str
     conditions: Dict[str, int]
+
+
+@app.middleware("http")
+async def log_requests(request, call_next):
+    logger.info(f"Received request: {request.method} {request.url}")
+    logger.info(f"Headers: {request.headers}")
+    response = await call_next(request)
+    logger.info(f"Response status: {response.status_code}")
+    return response
 
 
 @app.post("/evaluate")
@@ -90,4 +105,10 @@ async def favicon():
 
 @app.get("/")
 async def read_index():
+    logger.info("Serving index.html")
     return FileResponse("static/index.html")
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
