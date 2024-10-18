@@ -1,5 +1,5 @@
 import itertools
-from typing import List, Dict
+from typing import List, Dict, Set
 from pprint import pprint
 
 import numpy as np
@@ -64,12 +64,11 @@ class PExp:
         self._key_elements: Dict[str, np.ndarray] = self._build_table()
         self._num_var: int
 
-    def vars(self) -> List[str]:
-        seen = {}
-        return [
+    def vars(self) -> Set[str]:
+        return {
             s for s in self.post_expression
-            if any(c.isalnum() for c in s) and not seen.setdefault(s, False)
-        ]
+            if any(c.isalnum() for c in s)
+        }
 
     def _build_table(self) -> Dict[str, np.ndarray]:
         rizz: Dict[str, np.ndarray] = {}
@@ -186,7 +185,7 @@ class PExp:
 
 
 if __name__ == "__main__":
-    exp0 = PExp("a&b-c|d").solve().show_table()
+    exp0 = PExp("b|b-c|d").solve().show_table()
     e0 = PExp("a").solve().show_table()
     exp1 = PExp("memo|b-c").solve().show_table()
     print(exp0.where(b=1, c=0).to_markdown(), '\n')
