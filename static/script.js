@@ -1,3 +1,69 @@
+// Function to display results on the webpage
+function displayResult(data) {
+    const resultElement = document.getElementById('result');
+    resultElement.innerHTML = '';
+    resultElement.classList.remove('error');
+
+    // Display the evaluated expression
+    if (data.expression) {
+        const expressionElement = document.createElement('h3');
+        expressionElement.textContent = `Expression: ${data.expression}`;
+        resultElement.appendChild(expressionElement);
+    }
+
+    // Display the truth table in a table format
+    if (data.truth_table) {
+        const table = document.createElement('table');
+        const thead = document.createElement('thead');
+        const tbody = document.createElement('tbody');
+
+        // Create table header
+        const headerRow = document.createElement('tr');
+        Object.keys(data.truth_table[0]).forEach(key => {
+            const th = document.createElement('th');
+            th.textContent = key;
+            headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // Create table body
+        data.truth_table.forEach(row => {
+            const tr = document.createElement('tr');
+            Object.values(row).forEach(value => {
+                const td = document.createElement('td');
+                // Check if the value is an object
+                td.textContent = (typeof value === 'object') ? JSON.stringify(value) : value; // Convert object to string
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        resultElement.appendChild(table);
+    }
+
+    // Display equality result of expressions
+    if (data.are_equal !== undefined) {
+        const equalityElement = document.createElement('p');
+        equalityElement.textContent = `Expressions are ${data.are_equal ? 'equal' : 'not equal'}.`;
+        resultElement.appendChild(equalityElement);
+    }
+
+    // Display conditions used in the evaluation
+    if (data.conditions) {
+        const conditionsElement = document.createElement('h4');
+        conditionsElement.textContent = 'Conditions:';
+        resultElement.appendChild(conditionsElement);
+        const conditionsList = document.createElement('ul');
+        Object.entries(data.conditions).forEach(([key, value]) => {
+            const li = document.createElement('li');
+            li.textContent = `${key}: ${value}`;
+            conditionsList.appendChild(li);
+        });
+        resultElement.appendChild(conditionsList);
+    }
+}
+
 // Base URL for the backend
 const BASE_URL = "https://plogic.onrender.com"; // Replace with your actual backend URL
 
