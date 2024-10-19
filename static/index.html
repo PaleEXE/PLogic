@@ -167,6 +167,7 @@
             const expression1 = expression2Input.value.replace(/ /g, "");
             axios.post('/compare', [expression0, expression1])
                 .then(response => {
+                    console.log(response.data)
                     displayResult(response.data);
                 })
                 .catch(error => {

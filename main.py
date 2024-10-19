@@ -67,20 +67,18 @@ async def compare_expressions(expressions: List[str]):
     """
     Compare two logical expressions to determine if they are equivalent.
     """
-    logger.info("Received expressions: %s", json.dumps([e.dict() for e in expressions]))
     if len(expressions) != 2:
         raise HTTPException(status_code=400, detail="Please provide exactly two expressions to compare")
 
     try:
-        pexp1 = PExp(expressions[0].expression).solve()
-        pexp2 = PExp(expressions[1].expression).solve()
+        pexp1 = PExp(expressions[0]).solve()
+        pexp2 = PExp(expressions[1]).solve()
 
         are_equal = pexp1 == pexp2
-        logger.info("Comparison Result for '%s' and '%s': %s", expressions[0].expression, expressions[1].expression, are_equal)
 
         return {
-            "expressions": [e.expression for e in expressions],
-            "are_equal": are_equal,
+            "expressions": expressions,
+            "are_equal": are_equal
         }
     except Exception as e:
         logger.error("Error in compare_expressions: %s", str(e))
