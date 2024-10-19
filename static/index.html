@@ -3,91 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paleositional Expression Evaluator</title>
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <title>Logic Expression Evaluator</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <style>
-        body {
-            font-family: "Nirmala UI", "Sakkal Majalla";
-            line-height: 1.6;
-            padding: 20px;
-            max-width: 1200px;
-            background-color: #ffffff;
-            margin: 0 auto;
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tableHeader: '#ff6b81',
+                        primary: '#ff6b81',
+                        secondary: '#ffe0e7',
+                    }
+                }
+            }
         }
-        h1, h2 {
-            color: #333;
-        }
-        input[type="text"], textarea, button {
-            margin: 10px 0;
-            padding: 5px;
-            width: 100%; /* Ensure it uses full width */
-            box-sizing: border-box; /* Include padding in width calculation */
-        }
-        button {
-            cursor: pointer;
-            background-color: #b647b2;
-            width: 100px;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            transition-duration: 0.4s;
-        }
-        button:hover {
-            background-color: #6d256a;
-        }
-        #result {
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            padding: 10px;
-            background-color: #f9f9f9;
-        }
-        .error {
-            color: red;
-            font-weight: bold;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 10px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #d983ee;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background-color: #c9eef2;
+    </script>
+    <style type="text/tailwindcss">
+        @layer components {
+            .custom-table {
+                @apply w-full border-collapse border border-gray-300 shadow-lg rounded-lg overflow-hidden;
+            }
+            .custom-table th {
+                @apply bg-tableHeader text-white font-bold text-sm px-6 py-3 text-left tracking-wider; /* Light pink header */
+            }
+            .custom-table td {
+                @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-t border-gray-200;
+            }
+            .custom-table tbody tr:nth-child(even) {
+                @apply bg-secondary;
+            }
+            .custom-table tbody tr:hover {
+                @apply bg-pink-200;
+            }
         }
     </style>
 </head>
-<body>
-    <h1>Paleositional Expression Evaluator</h1>
+<body class="bg-pink-50 p-8"> <!-- Light pink background -->
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-primary">Logic Expression Evaluator</h1>
+            <button id="helpBtn" class="bg-primary hover:bg-pink-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
+                Help
+            </button>
+        </div>
 
-    <h2>Evaluate Expression</h2>
-    <label for="expression"></label><input type="text" id="expression" placeholder="Enter expression (e.g., a&b-c|d)">
-    <button onclick="evaluateExpression()">Evaluate</button>
+        <div class="mb-6">
+            <label for="expression" class="block text-sm font-medium text-gray-700 mb-2">Enter Logical Expression:</label>
+            <input type="text" id="expression" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" placeholder="e.g., a&b|c">
+        </div>
 
-    <h2>Compare Expressions</h2>
-    <label for="expression1"></label><input type="text" id="expression1" placeholder="Enter first expression">
-    <label for="expression2"></label><input type="text" id="expression2" placeholder="Enter second expression">
-    <button onclick="compareExpressions()">Compare</button>
+        <div class="flex space-x-4 mb-6">
+            <button id="evaluateBtn" class="bg-primary hover:bg-pink-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
+                Evaluate
+            </button>
+            <button id="compareBtn" class="bg-primary hover:bg-pink-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
+                Compare
+            </button>
+            <button id="whereBtn" class="bg-primary hover:bg-pink-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
+                Apply Where
+            </button>
+        </div>
 
-    <h2>Where Condition</h2>
-    <input type="text" id="whereExpression" placeholder="Enter expression">
-    <label for="conditions"></label><textarea id="conditions" placeholder='Enter conditions as JSON (e.g., {"a": 1, "b": 0})' rows="4"></textarea>
-    <button onclick="whereCondition()">Evaluate</button>
+        <div id="compareInputs" class="hidden mb-6">
+            <input type="text" id="expression2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Enter second expression for comparison">
+        </div>
 
-    <div id="result"></div>
-    <script src="/static/script.js"></script>
+        <div id="whereInputs" class="hidden mb-6">
+            <div id="conditionsContainer"></div>
+            <button id="addConditionBtn" class="mt-4 bg-primary hover:bg-pink-600 text-white font-bold py-2 px-4 rounded text-sm transition duration-300 ease-in-out transform hover:scale-105">
+                Add Condition
+            </button>
+        </div>
+
+        <div id="result" class="mt-6"></div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">How to Use the Logic Expression Evaluator</h3>
+                <div class="mt-2 px-7 py-3 text-left">
+                    <p class="text-sm text-gray-500">
+                        This tool allows you to evaluate and compare logical expressions. Here's how to use it:
+                        <br><br>
+                        1. <strong>Evaluate:</strong> Enter a logical expression (e.g., "a&b|c") and click "Evaluate" to see its truth table.
+                        <br>
+                        2. <strong>Compare:</strong> Click "Compare", enter two expressions, and click "Compare" again to check if they're equivalent.
+                        <br>
+                        3. <strong>Apply Where:</strong> Click "Apply Where", enter an expression and conditions, then click "Apply Where" again to filter the truth table.
+                        <br><br>
+                        Operators: & (AND), | (OR), ^ (XOR), ~ (NOT), - (IMPLIES), = (EQUALS)
+                        <br><br>
+                        Variables can be any lowercase letter. The tool will generate all possible combinations of TRUE (1) and FALSE (0) for each variable in your expression.
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="closeModal" class="px-4 py-2 bg-primary text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-300">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const expressionInput = document.getElementById('expression');
+        const evaluateBtn = document.getElementById('evaluateBtn');
+        const compareBtn = document.getElementById('compareBtn');
+        const whereBtn = document.getElementById('whereBtn');
+        const compareInputs = document.getElementById('compareInputs');
+        const expression2Input = document.getElementById('expression2');
+        const whereInputs = document.getElementById('whereInputs');
+        const conditionsContainer = document.getElementById('conditionsContainer');
+        const addConditionBtn = document.getElementById('addConditionBtn');
+        const resultDiv = document.getElementById('result');
+        const helpBtn = document.getElementById('helpBtn');
+        const helpModal = document.getElementById('helpModal');
+        const closeModal = document.getElementById('closeModal');
+
+        evaluateBtn.addEventListener('click', evaluate);
+        compareBtn.addEventListener('click', toggleCompareInputs);
+        whereBtn.addEventListener('click', toggleWhereInputs);
+        addConditionBtn.addEventListener('click', addConditionInput);
+        helpBtn.addEventListener('click', () => helpModal.classList.remove('hidden'));
+        closeModal.addEventListener('click', () => helpModal.classList.add('hidden'));
+
+        // Close modal when clicking outside of it
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.classList.add('hidden');
+            }
+        });
+
+        function evaluate() {
+            const expression = expressionInput.value.replace(/ /g, "");
+            axios.post('/evaluate', { expression })
+                .then(response => {
+                    displayResult(response.data);
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `<p class="text-red-500">Error: ${error.response.data.detail}</p>`;
+                });
+        }
+
+        function toggleCompareInputs() {
+            compareInputs.classList.toggle('hidden');
+            whereInputs.classList.add('hidden');
+            if (!compareInputs.classList.contains('hidden')) {
+                compareBtn.textContent = 'Compare';
+                compareBtn.removeEventListener('click', toggleCompareInputs);
+                compareBtn.addEventListener('click', compare);
+            } else {
+                compareBtn.textContent = 'Compare';
+                compareBtn.removeEventListener('click', compare);
+                compareBtn.addEventListener('click', toggleCompareInputs);
+            }
+        }
+
+        function compare() {
+            const expression0 = expressionInput.value.replace(/ /g, "");
+            const expression1 = expression2Input.value.replace(/ /g, "");
+            axios.post('/compare', [expression0, expression1])
+                .then(response => {
+                    displayResult(response.data);
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `<p class="text-red-500">Error: ${error.response.data.detail}</p>`;
+                });
+        }
+
+
+        function toggleWhereInputs() {
+            whereInputs.classList.toggle('hidden');
+            compareInputs.classList.add('hidden');
+            if (!whereInputs.classList.contains('hidden')) {
+                whereBtn.textContent = 'Apply Where';
+                whereBtn.removeEventListener('click', toggleWhereInputs);
+                whereBtn.addEventListener('click', applyWhere);
+            } else {
+                whereBtn.textContent = 'Apply Where';
+                whereBtn.removeEventListener('click', applyWhere);
+                whereBtn.addEventListener('click', toggleWhereInputs);
+            }
+        }
+
+        function applyWhere() {
+            const expression = expressionInput.value;
+            const conditions = {};
+            const conditionInputs = conditionsContainer.querySelectorAll('div');
+            conditionInputs.forEach(input => {
+                const variable = input.querySelector('.condition-var').value;
+                const value = parseInt(input.querySelector('.condition-value').value);
+                if (variable && (value === 0 || value === 1)) {
+                    conditions[variable] = value;
+                }
+            });
+            axios.post('/where', { expression, conditions })
+                .then(response => {
+                    displayResult(response.data);
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `<p class="text-red-500">Error: ${error.response.data.detail}</p>`;
+                });
+        }
+
+        function displayResult(data) {
+            let resultHTML = '<h2 class="text-2xl font-bold mt-6 mb-4 text-[#ff6b81]">Result:</h2>';
+            if (data.truth_table) {
+                resultHTML += '<div class="overflow-x-auto"><table class="custom-table"><thead><tr>';
+                for (const key in data.truth_table[0]) {
+                    resultHTML += `<th class="px-6 py-3 text-left text-xs font-medium text-white tracking-wider">${key}</th>`;
+                }
+                resultHTML += '</tr></thead><tbody>';
+                data.truth_table.forEach(row => {
+                    resultHTML += '<tr>';
+                    for (const key in row) {
+                        resultHTML += `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${row[key]}</td>`;
+                    }
+                    resultHTML += '</tr>';
+                });
+                resultHTML += '</tbody></table></div>';
+            }
+            if (data.are_equal !== undefined) {
+                resultHTML += `<p class="text-lg">The expressions "${data.expressions[0]}" and "${data.expressions[1]}" are <span class="font-bold ${data.are_equal ? 'text-green-600' : 'text-red-600'}">${data.are_equal ? '' : 'not '}equivalent</span>.</p>`;
+            }
+            resultDiv.innerHTML = resultHTML;
+        }
+
+        function addConditionInput() {
+            const conditionDiv = document.createElement('div');
+            conditionDiv.className = 'flex space-x-2 mt-4';
+            conditionDiv.innerHTML = `
+                <input type="text" class="condition-var w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ff6b81] focus:border-[#ff6b81] placeholder="Variable">
+                <input type="number" class="condition-value w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ff6b81] focus:border-[#ff6b81]" placeholder="Value (0 or 1)">
+            `;
+            conditionsContainer.appendChild(conditionDiv);
+        }
+    </script>
 </body>
 </html>

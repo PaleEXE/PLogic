@@ -10,14 +10,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from PLogic import PExp
 
-
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://plogic.onrender.com"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,52 +46,64 @@ async def log_requests(request, call_next):
 
 @app.post("/evaluate")
 async def evaluate_expression(inp: ExpressionInput):
+    """
+    Evaluate the logical expression and return the truth table.
+    """
     try:
         pexp = PExp(inp.expression).solve()
         df = pexp.df
-
-        print("Truth Table:", df.to_json(orient="records"))  # Debugging line
+        logger.info("Truth Table: %s", df.to_json(orient="records"))  # Log output for debugging
         return {
             "expression": inp.expression,
             "truth_table": json.loads(df.to_json(orient="records"))
         }
     except Exception as e:
-        print("Error in evaluate_expression:", str(e))  # Debugging line
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error("Error in evaluate_expression: %s", str(e))  # Log error for debugging
+        raise HTTPException(status_code=400, detail="Failed to evaluate expression.")
 
 
 @app.post("/compare")
 async def compare_expressions(expressions: List[str]):
+    """
+    Compare two logical expressions to determine if they are equivalent.
+    """
+    logger.info("Received expressions: %s", json.dumps([e.dict() for e in expressions]))
     if len(expressions) != 2:
         raise HTTPException(status_code=400, detail="Please provide exactly two expressions to compare")
 
     try:
-        pexp1 = PExp(expressions[0]).solve()
-        pexp2 = PExp(expressions[1]).solve()
+        pexp1 = PExp(expressions[0].expression).solve()
+        pexp2 = PExp(expressions[1].expression).solve()
+
         are_equal = pexp1 == pexp2
+        logger.info("Comparison Result for '%s' and '%s': %s", expressions[0].expression, expressions[1].expression, are_equal)
+
         return {
-            "expressions": expressions,
+            "expressions": [e.expression for e in expressions],
             "are_equal": are_equal,
         }
     except Exception as e:
-        print("Error in compare_expressions:", str(e))
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error("Error in compare_expressions: %s", str(e))
+        raise HTTPException(status_code=400, detail="Failed to compare expressions.")
 
 
 @app.post("/where")
 async def where_condition(inp: WhereInput):
+    """
+    Apply conditions to the logical expression and return the filtered results.
+    """
     try:
         pexp = PExp(inp.expression).solve()
         result_df = pexp.where(**inp.conditions)
-        print("Where Result:", result_df)
+        logger.info("Where Result: %s", result_df.to_json(orient="records"))  # Log output for debugging
         return {
             "expression": inp.expression,
             "conditions": inp.conditions,
             "truth_table": json.loads(result_df.to_json(orient="records"))
         }
     except Exception as e:
-        print("Error in where_condition:", str(e))  # Debugging line
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error("Error in where_condition: %s", str(e))  # Log error for debugging
+        raise HTTPException(status_code=400, detail="Failed to apply where conditions.")
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -110,4 +124,5 @@ async def read_index():
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

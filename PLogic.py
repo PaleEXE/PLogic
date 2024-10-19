@@ -59,8 +59,8 @@ def infix_to_postfix(expression: str) -> List[str]:
 
 class PExp:
     def __init__(self, expression: str) -> None:
-        self._expression: str = expression
-        self._post_expression: List[str] = infix_to_postfix(expression)
+        self._expression: str = expression.replace(" ", "")
+        self._post_expression: List[str] = infix_to_postfix(self._expression)
         self._key_elements: Dict[str, np.ndarray] = self._build_table()
         self._num_var: int
 
@@ -185,9 +185,9 @@ class PExp:
 
 
 if __name__ == "__main__":
-    exp0 = PExp("b|b-c|d").solve().show_table()
+    exp0 = PExp("b").solve().show_table()
     e0 = PExp("a").solve().show_table()
-    exp1 = PExp("memo|b-c").solve().show_table()
-    print(exp0.where(b=1, c=0).to_markdown(), '\n')
-    print(PExp("a-b&c-k|p^x").solve().where(x=1, c=0, b=1, a=1, p=0, k=1).to_markdown())
+    exp1 = PExp("q").solve().show_table()
+    # print(exp0.where(b=1, c=0).to_markdown(), '\n')
+    # print(PExp("p|k").solve().where(x=1, c=0, b=1, a=1, p=0, k=1).to_markdown())
     print(exp0 == exp1)
